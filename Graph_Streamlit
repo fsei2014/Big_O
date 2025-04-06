@@ -1,0 +1,103 @@
+import streamlit as st
+import time
+import random
+import plotly.graph_objects as go
+
+# Algoritma
+def bubble_sort(arr):
+    n = len(arr)
+    for i in range(n):
+        for j in range(0, n - i - 1):
+            if arr[j] > arr[j + 1]:
+                arr[j], arr[j + 1] = arr[j + 1], arr[j]
+
+def merge_sort(arr):
+    if len(arr) > 1:
+        mid = len(arr) // 2
+        L = arr[:mid]
+        R = arr[mid:]
+        merge_sort(L)
+        merge_sort(R)
+        i = j = k = 0
+        while i < len(L) and j < len(R):
+            if L[i] < R[j]:
+                arr[k] = L[i]
+                i += 1
+            else:
+                arr[k] = R[j]
+                j += 1
+            k += 1
+        while i < len(L):
+            arr[k] = L[i]
+            i += 1
+            k += 1
+        while j < len(R):
+            arr[k] = R[j]
+            j += 1
+            k += 1
+
+def binary_search(arr, x):
+    low = 0
+    high = len(arr) - 1
+    while low <= high:
+        mid = (high + low) // 2
+        if arr[mid] < x:
+            low = mid + 1
+        elif arr[mid] > x:
+            high = mid - 1
+        else:
+            return mid
+    return -1
+
+# Streamlit UI
+st.set_page_config(page_title="Big O Visualizer", layout="centered")
+st.title("📊 Visualisasi Interaktif Notasi Big O dengan Plotly")
+st.write("Bandingkan waktu eksekusi dari beberapa algoritma berdasarkan ukuran data input.")
+
+size = st.slider("Pilih Ukuran Data (n)", min_value=100, max_value=3000, step=100)
+
+# Generate data
+data = random.sample(range(1, size * 10), size)
+data_sorted = sorted(data)
+
+# Bubble Sort
+bubble_data = data.copy()
+start = time.time()
+bubble_sort(bubble_data)
+bubble_time = (time.time() - start) * 1000
+
+# Merge Sort
+merge_data = data.copy()
+start = time.time()
+merge_sort(merge_data)
+merge_time = (time.time() - start) * 1000
+
+# Binary Search
+start = time.time()
+binary_search(data_sorted, data_sorted[size // 2])
+binary_time = (time.time() - start) * 1000
+
+# Plotly Visualization
+fig = go.Figure(data=[
+    go.Bar(name='Bubble Sort (O(n²))', x=["Bubble Sort"], y=[bubble_time], marker_color='crimson'),
+    go.Bar(name='Merge Sort (O(n log n))', x=["Merge Sort"], y=[merge_time], marker_color='royalblue'),
+    go.Bar(name='Binary Search (O(log n))', x=["Binary Search"], y=[binary_time], marker_color='seagreen')
+])
+
+fig.update_layout(
+    title=f"Perbandingan Waktu Eksekusi Algoritma untuk n = {size}",
+    xaxis_title="Algoritma",
+    yaxis_title="Waktu Eksekusi (ms)",
+    yaxis_type="linear",
+    bargap=0.5,
+    template="plotly_white",
+    showlegend=True
+)
+
+st.plotly_chart(fig, use_container_width=True)
+
+# Waktu Eksekusi
+st.subheader("📈 Rincian Waktu Eksekusi:")
+st.write(f"- Bubble Sort: **{bubble_time:.2f} ms**")
+st.write(f"- Merge Sort: **{merge_time:.2f} ms**")
+st.write(f"- Binary Search: **{binary_time:.6f} ms**")
